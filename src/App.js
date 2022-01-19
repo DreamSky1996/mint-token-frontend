@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import background from './assets/background.jpg'
 import BTContractJson from './contracts/AnyswapV5ERC20.json';
 import MTContractJson from './contracts/MintableToken.json';
 import MintContractJson from './contracts/MintContract.json';
