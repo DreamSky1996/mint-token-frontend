@@ -7,7 +7,7 @@ import { ethers } from 'ethers';
 
 const btAddress = "0x5E9E06d8f09c2F0bAF2FCEA7b75a1435fAdf4D83";
 const mtAddress = "0x4C9657ed39d4773f2f270A761ed356cb8a6Bb07E";
-const mintContractAddress = "0x51ef8a2Ec8A5BB7Ed8be41428EacFfd8C7387F05";
+const mintContractAddress = "0xA3198B4e339EA2FfCaeD864Bd0A2996cdCA2c7a8";
 const bt_abi = BTContractJson.abi; 
 const mt_abi = MTContractJson.abi; 
 const mc_abi = MintContractJson.abi; 
@@ -20,6 +20,7 @@ function App() {
   const [btBalance, setBtBalance] = useState("");
   const [mtBalance, setMtBalance] = useState("");
   const [mintEnable, setMintEnable] = useState(true);
+  const [inputError, setInputError] = useState(false);
 
   const shorten = (str) => {
     if (str.length < 10) return str;
@@ -98,8 +99,8 @@ function App() {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const mcContract = new ethers.Contract(mintContractAddress, mc_abi, signer);
-        let processedMintAmount = ethers.utils.parseUnits(mintAmount,6)
-        let mintTxn = await mcContract.mint(processedMintAmount);
+        // let processedMintAmount = ethers.utils.parseUnits(mintAmount,6)
+        let mintTxn = await mcContract.mint(mintAmount);
 
         await mintTxn.wait();
         console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${mintTxn.hash}`);
@@ -176,36 +177,53 @@ function App() {
   const mintButton = () => {
     return (
       <button onClick={mintHandler} className={mintEnable? 'cta-button mint-button': 'cta-button mint-button disabled'} disabled={!mintEnable}>
-        { mintEnable ?"Mint" : "pending .."}
+        { mintEnable ?"Mint" : "Processing..."}
       </button>
     )
   }
   const approveButton = () => {
     return (
       <button onClick={approveHandler} className={mintEnable ? 'cta-button mint-button' : 'cta-button mint-button disabled'} disabled={!mintEnable}>
-        { mintEnable ?"Approve" : "pending .."}
+        { mintEnable ?"Approve" : "Processing..."}
       </button>
     )
   }
 
   const mintOrApproveBtn = () => {
     return (
-      <div className="d-flex justify-center">
-        <div>
-          <input className="amount_input" type="number" value={mintAmount} onChange={handleMintAmountChange}/>
+      <div>      
+        <div className="d-flex justify-center">
+          <div>
+            <input className="amount_input" type="number" value={mintAmount} onChange={handleMintAmountChange}/>
+          </div>
+          <div>
+            {
+              approved? mintButton() : approveButton()
+            }
+          </div>
         </div>
-        <div>
-          {
-            approved? mintButton() : approveButton()
-          }
-        </div>
-          
+        <div className="input_error">
+          {inputError?'Sorry, you can only mint integer amount less than 9':''}            
+        </div>  
       </div>
     )
   }
 
   const handleMintAmountChange = (e) => {
-    setMintAmount(e.target.value)
+    setInputError(false)
+    setMintEnable(true)
+    if (checkInputError(e.target.value)) {
+      setMintAmount(e.target.value)
+    } else {
+      setInputError(true)
+    }    
+  }
+  const checkInputError = (val) => {
+    if (Number.isInteger(Number(val)) && Number(val) < 10) {
+      return true
+    } else {
+      return false
+    }
   }
 
   useEffect(() => {
