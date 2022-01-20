@@ -219,7 +219,7 @@ function App() {
     }    
   }
   const checkInputError = (val) => {
-    if (Number.isInteger(Number(val)) && Number(val) < 10) {
+    if (Number.isInteger(Number(val)) && Number(val) < 10 && Number(val) >= 0) {
       return true
     } else {
       return false
